@@ -39,6 +39,23 @@ router.get(
   }
 );
 
+//@route GET api/profile/all
+//@desc get ALL profiles
+//@access public
+
+router.get('/all', (req, res) => {
+  const errors = {}
+  Profile.find()
+  .populate('user', ['name', 'avatar'])
+  .then(profiles => {
+    if(!profiles) {
+      errors.noprofile = 'There are no profiles'
+      res.status(404).json(errors);
+    }
+    res.json(profiles)
+  })
+  .catch(err => res.status(404).json(err))
+})
 //@route GET api/profile/handle/:handle
 //@desc Get profile by handle
 //@access Public
@@ -146,5 +163,32 @@ router.post(
     });
   }
 );
+
+//@route POST api/profile/experience
+//@desc add experience to profile
+//@acess Private
+
+router.post('/experience', passport.authenticate('jwt', {session: false}), () => {
+  Profile.findOne({user: req.user.id})
+  .then(profile => {
+    const newExp = {
+      title: req.body.title,
+      company: req.body.company,
+      location: req.body.location,
+      from: req.body.from,
+      to: req.body.to,
+      current: req.body.current,
+      description: req.body.description
+    }
+
+    //Add to Experience Array
+
+    Profile.experience.unshift(newExp)
+
+    profile.save().then(profile => {
+      res.json
+    })
+  })
+})
 
 module.exports = router;
